@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "232250924843",
+    "firebase_url": "https://stripapp-1ecbe.firebaseio.com",
+    "project_id": "stripapp-1ecbe",
+    "storage_bucket": "stripapp-1ecbe.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:232250924843:android:e2714bcf98ff018bfcef6e",
+        "android_client_info": {
+          "package_name": "com.example.stripapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "232250924843-qv4trrdfu8sjrej89t632ost7qcsorma.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.stripapp",
+            "certificate_hash": "50904089700716145c2666d67ec3c9d8536ca843"
+          }
+        },
+        {
+          "client_id": "232250924843-9lt6h37u1gr2ssg4ae04odnkflathtpj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCb0gZEppCJeqV__FJw29cH176M_GgTCXM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "232250924843-9lt6h37u1gr2ssg4ae04odnkflathtpj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
