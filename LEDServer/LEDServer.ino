@@ -20,6 +20,8 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 const char* ssid = STASSID;
 const char* password = STAPSK;
 bool flag = 0;
+
+bool cont = false;
 ESP8266WebServer server(80);
 
 const int led = 13;
@@ -40,8 +42,9 @@ void colorWipe(uint32_t color, int wait) {
 
 void breathe(byte red, byte green, byte blue, int wait){
   float r, g, b;
+  cont = true;
   
-  for(int i = 0; i < 10; i++){  
+  while(true){  
     flag = 0;
     for(int k = 0; k < 256; k=k+1) {
       r = (k/256.0)*red;
@@ -49,8 +52,13 @@ void breathe(byte red, byte green, byte blue, int wait){
       b = (k/256.0)*blue;
       strip.fill(strip.Color(r,   g,   b));      
       strip.show(); 
-      delay(wait);         
+      delay(wait);   
+      server.handleClient();
+      if(!cont){
+        return;
+      }      
     }
+    
        
     for(int k = 255; k >= 0; k=k-2) {
       r = (k/256.0)*red;
@@ -58,25 +66,25 @@ void breathe(byte red, byte green, byte blue, int wait){
       b = (k/256.0)*blue;
       strip.fill(strip.Color(r,   g,   b));      
       strip.show(); 
-      delay(wait);           
+      delay(wait); 
+      
+      server.handleClient();
+      if(!cont){
+        return;
+      }           
     }
     
-//    server.on("/clear", []() {
-//      strip.fill();    
-//      strip.show();   
-//      flag = 1;
-//      
-//    });
-//    if(flag){
-//      break;
-//    }
+    
+
   }
+  cont = false;
   
 }
 
 
 
 void meteor(uint32_t color, int mSize, int mDecay, int wait) {
+  cont = true;
   for(int i = 0; i < strip.numPixels()*2; i++) {
     for(int j=0; j < strip.numPixels(); j++){
       if(random(10)>5){
@@ -91,7 +99,14 @@ void meteor(uint32_t color, int mSize, int mDecay, int wait) {
     }
     strip.show();
     delay(wait);
+    
+    server.handleClient();
+    if(!cont){
+      break;
+    }
   }
+  cont = false;
+  
 }
 
 
@@ -122,7 +137,8 @@ void fadeToBlack(int ledNo, int fadeValue) {
 
 
 void CylonBounce(int red, int green, int blue, int EyeSize, int SpeedDelay, int ReturnDelay){
-  for(int i = 0; i < 10; i++){  
+  cont = true;
+  while(true){  
     for(int i = 0; i < strip.numPixels()-EyeSize-2; i++) {
       strip.fill(); 
         strip.setPixelColor(i, strip.Color(red/10, green/10, blue/10));
@@ -132,8 +148,13 @@ void CylonBounce(int red, int green, int blue, int EyeSize, int SpeedDelay, int 
       strip.setPixelColor(i+EyeSize+1, red/10, green/10, blue/10);
       strip.show();
       delay(SpeedDelay);
+
+      server.handleClient();
+      if(!cont){
+        return;
+      } 
     }
-  
+   
     delay(ReturnDelay);
   
     for(int i = strip.numPixels()-EyeSize-2; i > 0; i--) {
@@ -145,63 +166,90 @@ void CylonBounce(int red, int green, int blue, int EyeSize, int SpeedDelay, int 
        strip.setPixelColor(i+EyeSize+1, strip.Color(red/10, green/10, blue/10));
       strip.show();
       delay(SpeedDelay);
+
+      server.handleClient();
+      if(!cont){
+        return;
+      } 
     }
+    
    
     delay(ReturnDelay);
   }
+  cont = false;
 }
 
 
 void TwinkleRandom(int SpeedDelay) {
-  strip.fill(); 
- 
-  for (int i=0; i<strip.numPixels(); i++) {
-     strip.setPixelColor(random(strip.numPixels()), strip.Color(random(0,255),random(0,255),random(0,255)));
-     strip.show();
-     delay(SpeedDelay);
-
-   }
- 
-  delay(SpeedDelay);
+  
+  cont = true; 
+  while(true){  
+    strip.fill();
+    for (int i=0; i<strip.numPixels(); i++) {
+       strip.setPixelColor(random(strip.numPixels()), strip.Color(random(0,255),random(0,255),random(0,255)));
+       strip.show();
+       delay(SpeedDelay);
+  
+  
+       server.handleClient();
+       if(!cont){
+         break;
+       }
+  
+     }
+   
+    delay(SpeedDelay);
+    cont = false;
+  }
 }
 
 
 void Sparkle(int red, int green, int blue, int SpeedDelay) {
+   cont = true;
    for (int i=0; i<strip.numPixels()/2; i++) {
       int Pixel = random(strip.numPixels());
       strip.setPixelColor(Pixel,strip.Color(red,green,blue));
       strip.show();
       delay(SpeedDelay);
       strip.setPixelColor(Pixel,strip.Color(0,0,0));
+
+
+      server.handleClient();
+      if(!cont){
+        break;
+      }
    }
+   cont = false;
 }
 
 
 
 
 void rainbow(int wait) {
-  // Hue of first pixel runs 5 complete loops through the color wheel.
-  // Color wheel has a range of 65536 but it's OK if we roll over, so
-  // just count from 0 to 5*65536. Adding 256 to firstPixelHue each time
-  // means we'll make 5*65536/256 = 1280 passes through this outer loop:
-  for(long firstPixelHue = 0; firstPixelHue < 5*65536; firstPixelHue += 256) {
-    for(int i=0; i<strip.numPixels(); i++) { // For each pixel in strip...
-      // Offset pixel hue by an amount to make one full revolution of the
-      // color wheel (range of 65536) along the length of the strip
-      // (strip.numPixels() steps):
-      int pixelHue = firstPixelHue + (i * 65536L / strip.numPixels());
-      // strip.ColorHSV() can take 1 or 3 arguments: a hue (0 to 65535) or
-      // optionally add saturation and value (brightness) (each 0 to 255).
-      // Here we're using just the single-argument hue variant. The result
-      // is passed through strip.gamma32() to provide 'truer' colors
-      // before assigning to each pixel:
-      strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(pixelHue)));
+  cont = true;
+  while(true){   
+    for(long firstPixelHue = 0; firstPixelHue < 5*65536; firstPixelHue += 256) {
+      for(int i=0; i<strip.numPixels(); i++) { // For each pixel in strip...
+     
+        int pixelHue = firstPixelHue + (i * 65536L / strip.numPixels());
+      
+        strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(pixelHue)));
+        
+      }
+      
+      strip.show(); // Update strip with new contents
+      delay(wait);  // Pause for a moment
+      server.handleClient();
+      if(!cont){
+        return;
+      }
     }
-    strip.show(); // Update strip with new contents
-    delay(wait);  // Pause for a moment
-
   }
-  
+  server.handleClient();
+    if(!cont){
+      return;
+    }
+  cont = false;
 }
 
 
@@ -209,6 +257,7 @@ void rainbow(int wait) {
 // a la strip.Color(r,g,b) as mentioned above), and a delay time (in ms)
 // between frames.
 void theaterChase(uint32_t color, int wait) {
+  cont = true;
   for(int a=0; a<10; a++) {  // Repeat 10 times...
     for(int b=0; b<3; b++) { //  'b' counts from 0 to 2...
       strip.clear();         //   Set all pixels in RAM to 0 (off)
@@ -218,6 +267,10 @@ void theaterChase(uint32_t color, int wait) {
       }
       strip.show(); // Update strip with new contents
       delay(wait);  // Pause for a moment
+    }
+    server.handleClient();
+    if(!cont){
+      break;
     }
   }
 }
@@ -273,29 +326,34 @@ void setup(void) {
   server.on("/", handleRoot);
 
   server.on("/meteor", [](){
+    cont = false;
     server.send(200, "text/plain", "meteor");
     //uint32_t color, int mSize, int mDecay, int wait
     meteor(strip.Color(server.arg(0).toInt(),  server.arg(1).toInt(),   server.arg(2).toInt()), 10, 64, 30);
   });
 
   server.on("/rainbow", []() {
+    cont = false;
     server.send(200, "text/plain", "rainbow");
     rainbow(20);
   });
 
   server.on("/wipe", []() {
+    cont = false;
     server.send(200, "text/plain", "wipe");
     colorWipe(strip.Color(server.arg(0).toInt(),  server.arg(1).toInt(),   server.arg(2).toInt()),20);
     
   });
 
   server.on("/breathe", []() {
+    cont = false;
     server.send(200, "text/plain", "breathe");
     breathe(server.arg(0).toInt(),  server.arg(1).toInt(),   server.arg(2).toInt(),2);
     
   });
 
   server.on("/bounce", []() {
+    cont = false;
     server.send(200, "text/plain", "bounce");
 //    int red, int green, int blue, int EyeSize, int SpeedDelay, int ReturnDelay
     CylonBounce(server.arg(0).toInt(),  server.arg(1).toInt(),   server.arg(2).toInt(),4, 10, 50);
@@ -303,34 +361,40 @@ void setup(void) {
   });
   
   server.on("/twinkle", []() {
+    cont = false;
     server.send(200, "text/plain", "twinkle");
     TwinkleRandom(25);
     
   });
 
   server.on("/sparkle", []() {
+    cont = false;
     server.send(200, "text/plain", "sparkle");
     Sparkle(random(255), random(255), random(255), 35);
     
   });
 
   server.on("/red", []() {
+    cont = false;
     server.send(200, "text/plain", "red");
     colorWipe(strip.Color(255,   0,   0),20);
   });
   server.on("/green", []() {
+    cont = false;
     server.send(200, "text/plain", "green");
     colorWipe(strip.Color(0,   255,   0),20);
   });
 
   server.on("/blue", []() {
+    cont = false;
     server.send(200, "text/plain", "blue");
     colorWipe(strip.Color(0,   0,   255),20);
   });
 
   server.on("/clear", []() {
-      strip.fill();    
-      strip.show();   
+    cont = false;
+    strip.fill();    
+    strip.show();   
   });
 
 
@@ -365,5 +429,5 @@ void setup(void) {
 void loop(void) {
   server.handleClient();
   MDNS.update();
-  
+  //todo: globalka i edin switch case tuka
 }
