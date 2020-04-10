@@ -181,10 +181,10 @@ void CylonBounce(int red, int green, int blue, int EyeSize, int SpeedDelay, int 
 
 
 void TwinkleRandom(int SpeedDelay) {
-  
+  strip.fill();
   cont = true; 
-  while(true){  
-    strip.fill();
+  for (int i=0; i<strip.numPixels()/2; i++) {
+    
     for (int i=0; i<strip.numPixels(); i++) {
        strip.setPixelColor(random(strip.numPixels()), strip.Color(random(0,255),random(0,255),random(0,255)));
        strip.show();
