@@ -4,38 +4,32 @@
 #include <ESP8266mDNS.h>
 
 #include <Adafruit_NeoPixel.h>
-#define LED_PIN   4
+#define LED_PIN   4  //D2 on esp8266
 
-// How many NeoPixels are attached to the Arduino?
-#define LED_COUNT 120
 
-// Declare our NeoPixel strip object:
+#define LED_COUNT 120 // How many LEDs are on the strip 
+
+// Declare the NeoPixel strip object:
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 #ifndef STASSID
-#define STASSID "simko"
-#define STAPSK  "asdfnetasdf"
+#define STASSID "simko"  //Network's name
+#define STAPSK  "asdfnetasdf"  //Network's password
 #endif
 
 const char* ssid = STASSID;
 const char* password = STAPSK;
-bool flag = 0;
 
-bool cont = false;
+
+bool cont = false; //used to check if there is a new request to overwrite the current effect
 ESP8266WebServer server(80);
 
 const int led = 13;
-
-// Fill strip pixels one after another with a color. Strip is NOT cleared
-// first; anything there will be covered pixel by pixel. Pass in color
-// (as a single 'packed' 32-bit value, which you can get by calling
-// strip.Color(red, green, blue) as shown in the loop() function above),
-// and a delay time (in milliseconds) between pixels.
 void colorWipe(uint32_t color, int wait) {
   for(int i=0; i<strip.numPixels(); i++) { // For each pixel in strip...
-    strip.setPixelColor(i, color);         //  Set pixel's color (in RAM)
+    strip.setPixelColor(i, color);         
     strip.show();                          //  Update strip to match
-    delay(wait);                           //  Pause for a moment
+    delay(wait);                           //  Wait for a moment
   }
 }
 
@@ -45,7 +39,7 @@ void breathe(byte red, byte green, byte blue, int wait){
   cont = true;
   
   while(true){  
-    flag = 0;
+
     for(int k = 0; k < 256; k=k+1) {
       r = (k/256.0)*red;
       g = (k/256.0)*green;
@@ -53,7 +47,7 @@ void breathe(byte red, byte green, byte blue, int wait){
       strip.fill(strip.Color(r,   g,   b));      
       strip.show(); 
       delay(wait);   
-      server.handleClient();
+      server.handleClient(); //check if there is a new request
       if(!cont){
         return;
       }      
@@ -68,7 +62,7 @@ void breathe(byte red, byte green, byte blue, int wait){
       strip.show(); 
       delay(wait); 
       
-      server.handleClient();
+      server.handleClient(); //check if there is a new request
       if(!cont){
         return;
       }           
@@ -100,7 +94,7 @@ void meteor(uint32_t color, int mSize, int mDecay, int wait) {
     strip.show();
     delay(wait);
     
-    server.handleClient();
+    server.handleClient(); //check if there is a new request
     if(!cont){
       break;
     }
@@ -149,7 +143,7 @@ void CylonBounce(int red, int green, int blue, int EyeSize, int SpeedDelay, int 
       strip.show();
       delay(SpeedDelay);
 
-      server.handleClient();
+      server.handleClient(); //check if there is a new request
       if(!cont){
         return;
       } 
@@ -167,7 +161,7 @@ void CylonBounce(int red, int green, int blue, int EyeSize, int SpeedDelay, int 
       strip.show();
       delay(SpeedDelay);
 
-      server.handleClient();
+      server.handleClient(); //check if there is a new request
       if(!cont){
         return;
       } 
@@ -191,7 +185,7 @@ void TwinkleRandom(int SpeedDelay) {
        delay(SpeedDelay);
   
   
-       server.handleClient();
+       server.handleClient(); //check if there is a new request
        if(!cont){
          break;
        }
@@ -214,7 +208,7 @@ void Sparkle(int red, int green, int blue, int SpeedDelay) {
       strip.setPixelColor(Pixel,strip.Color(0,0,0));
 
 
-      server.handleClient();
+      server.handleClient(); //check if there is a new request
       if(!cont){
         break;
       }
@@ -239,49 +233,26 @@ void rainbow(int wait) {
       
       strip.show(); // Update strip with new contents
       delay(wait);  // Pause for a moment
-      server.handleClient();
+      server.handleClient(); //check if there is a new request
       if(!cont){
         return;
       }
     }
   }
-  server.handleClient();
-    if(!cont){
-      return;
-    }
+  
   cont = false;
 }
 
 
-// Theater-marquee-style chasing lights. Pass in a color (32-bit value,
-// a la strip.Color(r,g,b) as mentioned above), and a delay time (in ms)
-// between frames.
-void theaterChase(uint32_t color, int wait) {
-  cont = true;
-  for(int a=0; a<10; a++) {  // Repeat 10 times...
-    for(int b=0; b<3; b++) { //  'b' counts from 0 to 2...
-      strip.clear();         //   Set all pixels in RAM to 0 (off)
-      // 'c' counts up from 'b' to end of strip in steps of 3...
-      for(int c=b; c<strip.numPixels(); c += 3) {
-        strip.setPixelColor(c, color); // Set pixel 'c' to value 'color'
-      }
-      strip.show(); // Update strip with new contents
-      delay(wait);  // Pause for a moment
-    }
-    server.handleClient();
-    if(!cont){
-      break;
-    }
-  }
-}
 
-void handleRoot() {
+
+void handleRoot() { //handles the webpage at '/'
   
   server.send(200, "text/plain", "hello from esp8266! working\n /rainbow\n /wipe?r=X&g=X&b=X \n /red \n /blue \n /green");
   
 }
 
-void handleNotFound() {
+void handleNotFound() { //handles the webpage on error
   digitalWrite(led, 1);
   String message = "File Not Found\n\n";
   message += "URI: ";
@@ -305,7 +276,7 @@ void setup(void) {
   digitalWrite(led, 0);
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
+  WiFi.begin(ssid, password); //Connect to wifi
   Serial.println("");
 
   // Wait for connection
@@ -322,7 +293,7 @@ void setup(void) {
   if (MDNS.begin("esp8266")) {
     Serial.println("MDNS responder started");
   }
-
+  //Define different behavior depending on the path and the given request
   server.on("/", handleRoot);
 
   server.on("/meteor", [](){
@@ -341,14 +312,14 @@ void setup(void) {
   server.on("/wipe", []() {
     cont = false;
     server.send(200, "text/plain", "wipe");
-    colorWipe(strip.Color(server.arg(0).toInt(),  server.arg(1).toInt(),   server.arg(2).toInt()),20);
+    colorWipe(strip.Color(server.arg(0).toInt(),  server.arg(1).toInt(),   server.arg(2).toInt()),20); //using args from the request to pass on the color rgb values... For example /wipe?r=0&g=255&b=0 would give us green 
     
   });
 
   server.on("/breathe", []() {
     cont = false;
     server.send(200, "text/plain", "breathe");
-    breathe(server.arg(0).toInt(),  server.arg(1).toInt(),   server.arg(2).toInt(),2);
+    breathe(server.arg(0).toInt(),  server.arg(1).toInt(),   server.arg(2).toInt(),2); //using args from the request to pass on the color rgb values... For example /wipe?r=0&g=255&b=0 would give us green 
     
   });
 
@@ -356,7 +327,7 @@ void setup(void) {
     cont = false;
     server.send(200, "text/plain", "bounce");
 //    int red, int green, int blue, int EyeSize, int SpeedDelay, int ReturnDelay
-    CylonBounce(server.arg(0).toInt(),  server.arg(1).toInt(),   server.arg(2).toInt(),4, 10, 50);
+    CylonBounce(server.arg(0).toInt(),  server.arg(1).toInt(),   server.arg(2).toInt(),4, 10, 50); //using args from the request to pass on the color rgb values... For example /wipe?r=0&g=255&b=0 would give us green 
     
   });
   
@@ -393,41 +364,26 @@ void setup(void) {
 
   server.on("/clear", []() {
     cont = false;
-    strip.fill();    
+    strip.fill();    // fills the strip with 0,0,0 colored pixels - a.k.a all of them are off
     strip.show();   
   });
 
 
-  server.on("/gif", []() {
-    static const uint8_t gif[] PROGMEM = {
-      0x47, 0x49, 0x46, 0x38, 0x37, 0x61, 0x10, 0x00, 0x10, 0x00, 0x80, 0x01,
-      0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0xff, 0x2c, 0x00, 0x00, 0x00, 0x00,
-      0x10, 0x00, 0x10, 0x00, 0x00, 0x02, 0x19, 0x8c, 0x8f, 0xa9, 0xcb, 0x9d,
-      0x00, 0x5f, 0x74, 0xb4, 0x56, 0xb0, 0xb0, 0xd2, 0xf2, 0x35, 0x1e, 0x4c,
-      0x0c, 0x24, 0x5a, 0xe6, 0x89, 0xa6, 0x4d, 0x01, 0x00, 0x3b
-    };
-    char gif_colored[sizeof(gif)];
-    memcpy_P(gif_colored, gif, sizeof(gif));
-    // Set the background to a random set of colors
-    gif_colored[16] = millis() % 256;
-    gif_colored[17] = millis() % 256;
-    gif_colored[18] = millis() % 256;
-    server.send(200, "image/gif", gif_colored, sizeof(gif_colored));
-  });
+  
 
   server.onNotFound(handleNotFound);
 
-  server.begin();
+  server.begin(); //starts the http server
   Serial.println("HTTP server started");
 
   
-  strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
-  strip.show();            // Turn OFF all pixels ASAP
-  strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
+  strip.begin();           
+  strip.show();            
+  strip.setBrightness(50); // Sets the brightness to about 1/5 (max = 255)
 }
 
 void loop(void) {
   server.handleClient();
   MDNS.update();
-  //todo: globalka i edin switch case tuka
+  
 }
