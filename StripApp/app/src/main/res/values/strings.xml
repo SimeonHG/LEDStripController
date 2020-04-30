@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">StripApp</string>
+
+    <string-array name="effects">
+        <item>Wipe</item>
+        <item>Rainbow</item>
+        <item>Twinkle</item>
+        <item>Breathe</item>
+        <item>Bounce</item>
+
+    </string-array>
+
 </resources>
