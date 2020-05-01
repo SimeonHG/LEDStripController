@@ -13,6 +13,8 @@ public class MainActivity extends AppCompatActivity {
     private Button logoutBtn;
     private Button testBtn;
     private Button customBtn;
+    private Button presetsBtn;
+    private Button settingsBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +24,8 @@ public class MainActivity extends AppCompatActivity {
         logoutBtn = findViewById(R.id.logoutBtn);
         testBtn = findViewById(R.id.testBtn);
         customBtn = findViewById(R.id.customBtn);
+        presetsBtn = findViewById(R.id.presetsBtn);
+        settingsBtn = findViewById(R.id.settingsBtn);
 
         logoutBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -37,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, EmptyActivity.class));
-                finish();
+
             }
         });
 
@@ -45,7 +49,23 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, CustomActivity.class));
-                finish();
+
+            }
+        });
+
+        presetsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, PresetsActivity.class));
+
+            }
+        });
+
+        settingsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+
             }
         });
 

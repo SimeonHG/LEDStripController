@@ -1,5 +1,6 @@
 package com.example.stripapp;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -13,6 +14,13 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class EmptyActivity extends AppCompatActivity {
 
@@ -21,6 +29,12 @@ public class EmptyActivity extends AppCompatActivity {
     private Button breatheBtn;
     private Button greenWipeBtn;
     private Button bounceBtn;
+
+    private String dbUrl;
+    private FirebaseAuth mAuth;
+    private DatabaseReference dbRef;
+    private FirebaseUser currentUser;
+    private String currentUserID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,12 +47,29 @@ public class EmptyActivity extends AppCompatActivity {
         greenWipeBtn = findViewById(R.id.greenWipeBtn);
         bounceBtn = findViewById(R.id.bounceBtn);
 
+        mAuth = FirebaseAuth.getInstance();
+        currentUser = mAuth.getCurrentUser();
+        currentUserID = mAuth.getCurrentUser().getUid();
+        dbRef = FirebaseDatabase.getInstance().getReference();
+
+        dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                dbUrl = dataSnapshot.child("Settings").child(currentUserID).child("url").getValue().toString();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
 
         rainbowBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 RequestQueue queue = Volley.newRequestQueue(EmptyActivity.this);
-                String url ="http://192.168.43.100/rainbow";
+                String url = dbUrl + "rainbow";
                 StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                         new Response.Listener<String>() {
                             @Override
@@ -60,7 +91,7 @@ public class EmptyActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 RequestQueue queue = Volley.newRequestQueue(EmptyActivity.this);
-                String url ="http://192.168.43.100/clear";
+                String url = dbUrl + "clear";
                 StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                         new Response.Listener<String>() {
                             @Override
@@ -79,7 +110,7 @@ public class EmptyActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 RequestQueue queue = Volley.newRequestQueue(EmptyActivity.this);
-                String url ="http://192.168.43.100/breathe?r=100&g=100&b=0";
+                String url = dbUrl+"breathe?r=100&g=100&b=0";
                 StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                         new Response.Listener<String>() {
                             @Override
@@ -105,7 +136,7 @@ public class EmptyActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 RequestQueue queue = Volley.newRequestQueue(EmptyActivity.this);
-                String url ="http://192.168.43.100/wipe?r=0&g=255&b=0";
+                String url =dbUrl+"wipe?r=0&g=255&b=0";
                 StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                         new Response.Listener<String>() {
                             @Override
@@ -130,7 +161,7 @@ public class EmptyActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 RequestQueue queue = Volley.newRequestQueue(EmptyActivity.this);
-                String url ="http://192.168.43.100/bounce?r=0&g=255&b=100";
+                String url = dbUrl + "bounce?r=0&g=255&b=100";
                 StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                         new Response.Listener<String>() {
                             @Override

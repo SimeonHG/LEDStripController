@@ -82,7 +82,9 @@ public class CustomActivity extends AppCompatActivity implements AdapterView.OnI
             @Override
             public void onClick(View view) {
                 String request = genRequest();
+                String args = genArgs();
                 dbRef.child("Presets").child(currentUserID).child(presetName.getText().toString()).child("request").setValue(request);
+                dbRef.child("Presets").child(currentUserID).child(presetName.getText().toString()).child("args").setValue(args);
                 dbRef.child("Presets").child(currentUserID).child(presetName.getText().toString()).child("name").setValue(presetName.getText().toString());
             }
         });
@@ -95,7 +97,7 @@ public class CustomActivity extends AppCompatActivity implements AdapterView.OnI
         String url = "http://192.168.43.100/";
 
         if(eff.equals("wipe") || eff.equals("breathe") || eff.equals("bounce")){
-            url = url.concat(eff +"?r=" + red +"?g=" + green +"?b=" + blue);
+            url = url.concat(eff +"?r=" + red +"&g=" + green +"&b=" + blue);
             //colorText.setText(url);
         } else {
             url = url.concat(eff);
@@ -103,6 +105,14 @@ public class CustomActivity extends AppCompatActivity implements AdapterView.OnI
         }
 
         return url;
+    }
+    private String genArgs(){
+        String eff = chosenEffect.toLowerCase();
+        if(eff.equals("wipe") || eff.equals("breathe") || eff.equals("bounce")) {
+            eff = eff.concat("?r=" + red + "&g=" + green + "&b=" + blue);
+            //colorText.setText(url);
+        }
+        return eff;
     }
 
     public void openColorPicker() {
